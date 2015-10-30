@@ -1,0 +1,215 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"new",
+				"newelement"
+			],
+			[
+				"con",
+				"condition"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"contents": "package com.xidian.Club;\n\nimport java.util.ArrayList;\nimport java.util.Hashtable;\nimport java.io.*;\n/*\n * Function: Modeling the process of network classification\n */\npublic class NetworkClassify extends AbstractCommon\n{\n	/*\n	 * Function: Variable Definition\n	 * networkset: the set of network that are going to be classified\n	 * coterie1: the set of network whose type is coterie1\n	 * coterie2: the set of network whose type is coterie2\n	 * coterie3: the set of network whose type is coterie3\n	 * social1: the set of network whose type is social circle1\n	 * social2: the set of network whose type is social circle2\n	 * halmet: the set of network whose type is halmet\n	 */\n	protected ArrayList<Network> networkset;\n	protected ArrayList<Network> coterie1;\n	protected ArrayList<Network> coterie2;\n	protected ArrayList<Network> coterie3;\n	protected ArrayList<Network> social1;\n	protected ArrayList<Network> social2;\n	protected ArrayList<Network> halmet;\n	\n	/*\n	 * Function: Constructor\n	 * Input: name: the name of the network\n	 * 		  set: the set of network to be classified\n	 * 		  outputpath: the file path of output file\n	 *        algoname: the name of the algorithm\n	 * Output: None\n	 */\n	public NetworkClassify(String name,ArrayList<Network> set,String outputpath,String algoname)\n	{\n		super(algoname+\"_\"+name,\".txt\",outputpath);\n		networkset=set;\n		coterie1=new ArrayList<Network>();\n		coterie2=new ArrayList<Network>();\n		coterie3=new ArrayList<Network>();\n		social1=new ArrayList<Network>();\n		social2=new ArrayList<Network>();\n		halmet=new ArrayList<Network>();\n		\n		\n	}\n	\n	/*\n	 * Function: Override Constructor\n	 * Input: filepath: the file path of network\n	 * 		  outputpath: the file path of output file\n	 *        algoname: the name of the algorithm\n	 * Output: None\n	 */\n	public NetworkClassify(String filepath,String outputpath,String algoname)\n	{\n		super(algoname+\"_\"+new File(filepath).getName().split(\"\\\\.\")[0],\".txt\",outputpath);\n		Network network=new Network(filepath);\n		coterie1=new ArrayList<Network>();\n		coterie2=new ArrayList<Network>();\n		coterie3=new ArrayList<Network>();\n		social1=new ArrayList<Network>();\n		social2=new ArrayList<Network>();\n		halmet=new ArrayList<Network>();\n		networkset=new ArrayList<Network>();\n		networkset.add(network);\n	}\n	\n	/*\n	 * Function: Run the process of network classification\n	 * Input: None\n	 * Output: None\n	 */\n	public void run()\n	{\n		for(int k=0;k<networkset.size();++k)\n		{\n			Network net=networkset.get(k);\n//			System.gc();\n			Network network=new Network();\n			Network orig=Network.orig;\n			ArrayList<Node> nodelist=new ArrayList<Node>();\n			//Copy the nodelist in net without neighbors\n			for(Node n:net.nodelist)\n				nodelist.add(n.Copy());\n			//New the mapping in current nodelist\n			Hashtable<String,Integer> name2index=new Hashtable<String,Integer>();\n			for(int i=0;i<nodelist.size();++i)\n				name2index.put(nodelist.get(i).name, i);\n			//Add neighbors to current nodelist\n			for(int i=0;i<net.nodelist.size();++i)\n			{\n				Node curnode=orig.nodelist.get(orig.name2index.get(net.nodelist.get(i).name));\n				for(int j=0;j<curnode.neighbors.size();++j)\n				{\n					if(curnode.neighbors.get(j).IsContained(net.nodelist))\n					{\n						nodelist.get(i).AddNeighbor(nodelist.get(name2index.get(curnode.neighbors.get(j).name)));\n					}\n				}\n			}\n			Edge[][] edgematrix=new Edge[nodelist.size()][nodelist.size()];\n			for(int i=0;i<nodelist.size();++i)\n			{\n				for(int j=0;j<nodelist.size();++j)\n				{\n					if(nodelist.get(j).IsContained(nodelist.get(i).neighbors))\n					{\n						edgematrix[i][j]=new Edge(nodelist.get(i),nodelist.get(j));\n						edgematrix[j][i]=edgematrix[i][j];\n					}\n				}\n			}\n			network.nodelist=nodelist;\n			network.edgematrix=edgematrix;\n			network.name2index=name2index;\n			\n			int type=IsCoterie(network);\n			if(type==-1)\n				type=IsSocial(network);\n			switch(type){\n			case 1:coterie1.add(network);break;\n			case 2:coterie2.add(network);break;\n			case 3:coterie3.add(network);break;\n			case 4:social1.add(network);break;\n			case 5:social2.add(network);break;\n			default:halmet.add(network);break;\n			}\n		}\n		String content=\"\";\n		content+=\"Coterie1:\\n\";\n		for(Network network:coterie1)\n		{\n			for(int i=0;i<network.nodelist.size();++i)\n				content+=network.nodelist.get(i).name+\"\\t\";\n			content+=\"\\n\";\n		}\n		\n		content+=\"Coterie2:\\n\";\n		for(Network network:coterie2)\n		{\n			for(int i=0;i<network.nodelist.size();++i)\n				content+=network.nodelist.get(i).name+\"\\t\";\n			content+=\"\\n\";\n		}\n		\n		content+=\"Coterie3:\\n\";\n		for(Network network:coterie3)\n		{\n			for(int i=0;i<network.nodelist.size();++i)\n				content+=network.nodelist.get(i).name+\"\\t\";\n			content+=\"\\n\";\n		}\n		\n		content+=\"Social Circle1:\\n\";\n		for(Network network:social1)\n		{\n			for(int i=0;i<network.nodelist.size();++i)\n				content+=network.nodelist.get(i).name+\"\\t\";\n			content+=\"\\n\";\n		}\n		\n		content+=\"Social Circle2:\\n\";\n		for(Network network:social2)\n		{\n			for(int i=0;i<network.nodelist.size();++i)\n				content+=network.nodelist.get(i).name+\"\\t\";\n			content+=\"\\n\";\n		}\n		\n		content+=\"Halmet:\\n\";\n		for(Network network:halmet)\n		{\n			for(int i=0;i<network.nodelist.size();++i)\n				content+=network.nodelist.get(i).name+\"\\t\";\n			content+=\"\\n\";\n		}\n		Output(\"classify\",content,false);\n	}\n	\n	/*\n	 * Function: Judge if the network belongs to Coterie\n	 * Input: network: the network to be classified\n	 * Output: If the network belongs to Coterie, then return the subtype number of Coterie, 1~3\n	 *         Otherwise return -1\n	 */\n	private int IsCoterie(Network network)\n	{\n		int type;\n		int nodenum=network.nodelist.size();\n		for(int i=0;i<nodenum;++i)\n		{\n			if(network.nodelist.get(i).degree==nodenum-1)\n			{\n				if(nodenum==2)\n				{\n					type=2;\n					return type;\n				}\n				else \n				{\n					type=CoterieType(network,i);\n					return type;\n				}\n			}\n		}\n		type=-1;\n		return type;\n	}\n	\n	/*\n	 * Function: Judege the subtype of Coterie\n	 * Input: network:the network to be classified\n	 * 		  index: the index of the center node in the nodelist\n	 * Output: The subtype nember of Coterie, 1~3\n	 */\n	private int CoterieType(Network network,int index)\n	{\n		Node corenode=network.nodelist.get(index);\n		for(int i=0;i<network.nodelist.size();++i)\n		{\n			network.nodelist.get(i).neighbors=Toolbox.KickoutElement(network.nodelist.get(i).neighbors,corenode);\n			network.nodelist.get(i).degree=network.nodelist.get(i).neighbors.size();\n		}\n//		network.nodelist=SetOperation.KickoutElement(network.nodelist, corenode);\n		network.nodelist.get(index).neighbors=new ArrayList<Node>();\n		network.nodelist.get(index).degree=0;\n		ArrayList<Network> sub=network.CollectComponent();\n		if(sub.size()==2)\n			return 3;\n		else return 1;\n	}\n	\n	/*\n	 * Function: Judge if the network belongs to Social Circle类\n	 * Input: network: the network to be classified\n	 * Output: If the network belongs to social circle, return the subtype nmber of social circle, 4~5\n	 *         Otherwise, return 6\n	 */\n	private int IsSocial(Network network)\n	{\n		int type;\n		int nodenum=network.nodelist.size();\n		int[][] antimatrix=new int[nodenum][nodenum];\n		for(int i=0;i<nodenum;++i)\n		{\n			for(int j=0;j<nodenum;++j)\n			{\n				if(i==j)\n					continue;\n				if(network.edgematrix[i][j]==null)\n					antimatrix[i][j]=1;\n			}\n		}\n		\n		int[][] antitwoorder=Toolbox.AppMatMul(antimatrix, antimatrix);\n		antitwoorder=Toolbox.AppMatAdd(antitwoorder, antimatrix);\n		for(int i=0;i<nodenum;++i)\n		{\n			for(int j=i;j<nodenum;++j)\n			{\n				if(antitwoorder[i][j]==0)\n				{\n					type=Socialtype(network);\n					return type;\n				}\n			}\n		}\n		type=6;\n		return type;\n	}\n	\n	/*\n	 * Function:Judege the subtype of Social Circle\n	 * Input: network:the network to be classified\n	 * Output: The subtype nember of Social Network, 1~3\n	 */\n	private int Socialtype(Network network)\n	{\n		int nodenum=network.nodelist.size();\n		int adj[][]=new int[nodenum][nodenum];\n		for(int i=0;i<nodenum;++i)\n			for(int j=i;j<nodenum;++j)\n				if(network.edgematrix[i][j]!=null)\n				{\n					adj[i][j]=1;\n					adj[j][i]=1;\n				}\n		int threeorder[][]=Toolbox.AppMatMul(Toolbox.AppMatMul(adj, adj),adj);\n		for(int i=0;i<nodenum;++i)\n			if(threeorder[i][i]==1)\n				return 4;\n		return 5;\n	}\n}\n",
+			"file": "NetworkClassify.java",
+			"file_size": 8453,
+			"file_write_time": 130828043012153767,
+			"settings":
+			{
+				"buffer_size": 8154,
+				"line_ending": "Windows",
+				"scratch": true
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 81.0,
+		"selected_items":
+		[
+			[
+				"Package Control: ",
+				"Package Control: Remove Package→删除程序包"
+			]
+		],
+		"width": 504.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/C/Users/Administrator/Desktop/DEN2H/Node.java",
+		"/C/Users/Administrator/Desktop/DEN2H/SparseMatrix.java",
+		"/用法",
+		"/C/Program Files (x86)/Sublime Text3/Data/Packages/User/JavaC.sublime-build",
+		"/[path"
+	],
+	"find":
+	{
+		"height": 0.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "NetworkClassify.java",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 8154,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								6661,
+								6661
+							]
+						],
+						"settings":
+						{
+							"encoding_helper_encoding": "GB2312",
+							"in_converting": true,
+							"origin_encoding": "GBK",
+							"syntax": "Packages/Java/Java.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 3705.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 0.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 124.0
+	},
+	"project": "NetworkClassify.sublime-project",
+	"replace":
+	{
+		"height": 0.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 150.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
