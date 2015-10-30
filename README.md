@@ -3,7 +3,7 @@
 Compilation:
 -----------
 
-- This project is based on Java 1.7.
+- This project is based on Java with jdk1.7.
 
 - The files in bin/ is the classes compiled.
 
@@ -34,11 +34,11 @@ Output format:
 
 - The output files include three files.
 
-- The file with 'Community' as the prefix contains the non-overlap communities. In this file, each line represents a non-overlap commmunity.
+- The file with 'Community' as the suffix contains the non-overlap communities. In this file, each line represents a non-overlap commmunity.
 
--The file with 'overlap' as the prefix contains the overlap communities. In this file, each line represents an overlap community.
+-The file with 'Overlap' as the suffix contains the overlap communities. In this file, each line represents an overlap community.
 
--The file with 'classify' as the prefix contains result of the classification of the overlap communities. Each line represents an overlap community, and at the begining of every type, there is a label.
+-The file with 'Classify' as the suffix contains result of the classification of the overlap communities. Each line represents an overlap community, and at the begining of every type, there is a label.
 
 Contact
 -------
