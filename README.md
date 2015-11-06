@@ -1,4 +1,4 @@
-# DIVANC
+#DIVANC
 
 Compilation:
 -----------
@@ -38,9 +38,9 @@ Output format:
 
 - The file with 'Community' as the prefix contains the non-overlap communities. In this file, each line represents a non-overlap commmunity.
 
--The file with 'Overlap' as the prefix contains the overlap communities. In this file, each line represents an overlap community.
+- The file with 'Overlap' as the prefix contains the overlap communities. In this file, each line represents an overlap community.
 
--The file with 'Classify' as the prefix contains result of the classification of the overlap communities. Each line represents an overlap community, and at the begining of every type, there is a label.
+- The file with 'Classify' as the prefix contains result of the classification of the overlap communities. Each line represents an overlap community, and at the begining of every type, there is a label.
 
 Contact
 -------
